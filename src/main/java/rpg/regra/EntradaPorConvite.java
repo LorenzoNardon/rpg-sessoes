@@ -1,6 +1,7 @@
 package rpg.regra;
 
 import rpg.modelo.Jogador;
+
 import java.util.List;
 
 public class EntradaPorConvite implements RegraParticipacao {
@@ -15,10 +16,12 @@ public class EntradaPorConvite implements RegraParticipacao {
             );
         }
 
-        if (convidados.contains(null)) {
-            throw new IllegalArgumentException(
-                    "A lista não pode conter jogadores nulos."
-            );
+        for (Jogador jogador : convidados) {
+            if (jogador == null) {
+                throw new IllegalArgumentException(
+                        "A lista não pode conter jogadores nulos."
+                );
+            }
         }
 
         this.convidados = List.copyOf(convidados);
