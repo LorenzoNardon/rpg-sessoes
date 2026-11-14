@@ -1,4 +1,7 @@
 package rpg.modelo;
 
-public class StatusPresenca {
+public enum StatusPresenca {
+    PENDENTE,
+    PRESENTE,
+    AUSENTE
 }
