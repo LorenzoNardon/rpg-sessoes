@@ -2,49 +2,62 @@ package org.example;
 
 
 import rpg.modelo.Jogador;
-import rpg.modelo.Sessao;
-import rpg.modelo.StatusSessao;
+import rpg.modelo.SessaoAoVivo;
+import rpg.modelo.SessaoPorTexto;
+import rpg.regra.EntradaLivre;
+import rpg.regra.EntradaPorConvite;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        // Criando um jogador
         Jogador jogador1 = new Jogador("Lorenzo", "Aragorn");
         Jogador jogador2 = new Jogador("Miguel", "Gandalf");
+        Jogador jogador3 = new Jogador("João", "Legolas");
 
-        // Criando uma sessão de teste usando uma implementação anônima
-        Sessao sessao = new Sessao(
+        SessaoAoVivo sessaoLivre = new SessaoAoVivo(
                 "A Fortaleza Perdida",
                 LocalDateTime.now().plusDays(7),
-                4
-        ) {
-            @Override
-            public String gerarResumo() {
-                return "Sessão: " + getTitulo();
-            }
-        };
+                5,
+                "Discord",
+                "https://discord.com/",
+                new EntradaLivre()
+        );
 
-        // Adicionando jogadores
-        sessao.adicionarJogador(jogador1);
-        sessao.adicionarJogador(jogador2);
+        SessaoPorTexto sessaoConvite = new SessaoPorTexto(
+                "A Floresta Sombria",
+                LocalDateTime.now().plusDays(10),
+                5,
+                "Discord",
+                "#aventura",
+                new EntradaPorConvite(List.of(jogador1, jogador2))
+        );
 
-        // Exibindo informações
-        System.out.println(sessao.gerarResumo());
-        System.out.println("Jogadores: " + sessao.getJogadores().size());
-        System.out.println("Possui vagas: " + sessao.possuiVagas());
-        System.out.println("Status: " + sessao.getStatus());
+        // Sessão com entrada livre.
+        sessaoLivre.adicionarJogador(jogador1);
+        sessaoLivre.adicionarJogador(jogador3);
 
-        // Iniciando sessão
-        sessao.iniciar();
+        // Sessão que exige convite.
+        sessaoConvite.adicionarJogador(jogador1);
+        sessaoConvite.adicionarJogador(jogador2);
 
-        System.out.println("Novo status: " + sessao.getStatus());
+        System.out.println("=== SESSÃO AO VIVO ===");
+        System.out.println(sessaoLivre.gerarResumo());
+        System.out.println("Jogadores: " + sessaoLivre.getJogadores().size());
 
-        // Finalizando sessão
-        sessao.finalizar();
+        System.out.println("\n=== SESSÃO POR TEXTO ===");
+        System.out.println(sessaoConvite.gerarResumo());
+        System.out.println("Jogadores: " + sessaoConvite.getJogadores().size());
 
-        System.out.println("Status final: " + sessao.getStatus());
+        // Tentativa de entrada sem convite.
+        try {
+            sessaoConvite.adicionarJogador(jogador3);
+        } catch (Exception e) {
+            System.out.println("\nTentativa de entrada:");
+            System.out.println(e.getMessage());
+        }
     }
 }
