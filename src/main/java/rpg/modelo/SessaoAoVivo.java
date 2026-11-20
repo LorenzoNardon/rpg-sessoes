@@ -41,4 +41,8 @@ public class SessaoAoVivo extends Sessao {
                 + " | Plataforma: " + plataforma
                 + " | Link: " + linkSala;
     }
+    @Override
+    public String toString() {
+        return getTitulo() + " - " + getDataHora().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + " - " + getStatus();
+    }
 }

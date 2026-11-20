@@ -30,4 +30,9 @@ public class Jogador {
     public String gerarResumo() {
         return nome + " interpreta " + nomePersonagem;
     }
+
+    @Override
+    public String toString() {
+        return gerarResumo();
+    }
 }

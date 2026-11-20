@@ -52,4 +52,9 @@ public class Campanha {
     public int quantidadeSessoes() {
         return sessoes.size();
     }
+
+    @Override
+    public String toString() {
+        return nome + " (" + sistemaRpg + ")";
+    }
 }

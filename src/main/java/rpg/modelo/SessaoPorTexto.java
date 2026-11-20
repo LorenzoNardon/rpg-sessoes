@@ -41,4 +41,8 @@ public class SessaoPorTexto extends Sessao {
                 + " | Plataforma: " + plataforma
                 + " | Canal: " + canal;
     }
+    @Override
+    public String toString() {
+        return getTitulo() + " - " + getDataHora().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + " - " + getStatus();
+    }
 }
