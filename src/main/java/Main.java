@@ -1,5 +1,3 @@
-package org.example;
-
 import rpg.interfacegrafica.TelaPrincipal;
 
 import javax.swing.SwingUtilities;
