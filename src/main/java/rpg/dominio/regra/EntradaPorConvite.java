@@ -31,4 +31,8 @@ public class EntradaPorConvite implements RegraParticipacao {
     public boolean permiteEntrada(Jogador jogador) {
         return jogador != null && convidados.contains(jogador);
     }
+
+    public List<Jogador> getConvidados() {
+        return convidados;
+    }
 }
