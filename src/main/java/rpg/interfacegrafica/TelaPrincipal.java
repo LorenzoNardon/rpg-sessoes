@@ -10,12 +10,13 @@ import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 public class TelaPrincipal extends JFrame {
     private final GerenciadorRpg gerenciador = new GerenciadorRpg();
+    private final SeletorConvidados seletorConvidados;
     private final DefaultListModel<Jogador> modeloJogadores = new DefaultListModel<>();
     private final DefaultListModel<Campanha> modeloCampanhas = new DefaultListModel<>();
     private final DefaultListModel<Sessao> modeloSessoes = new DefaultListModel<>();
@@ -31,6 +32,11 @@ public class TelaPrincipal extends JFrame {
     private final DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public TelaPrincipal() {
+        this(new DialogoSelecaoConvidados());
+    }
+
+    public TelaPrincipal(SeletorConvidados seletorConvidados) {
+        this.seletorConvidados = Objects.requireNonNull(seletorConvidados);
         setTitle("Gerenciador de Sessões RPG");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 700);
@@ -137,20 +143,16 @@ public class TelaPrincipal extends JFrame {
                 throw new IllegalArgumentException("A capacidade deve ser um número inteiro.");
             }
 
-            RegraParticipacao regraEscolhida;
-            if (regra.getSelectedIndex() == 0) {
-                regraEscolhida = new EntradaLivre();
-            } else {
-                regraEscolhida = new EntradaPorConvite(selecionarConvidados());
-            }
+            Optional<RegraParticipacao> regraEscolhida = criarRegraParticipacao(regra.getSelectedIndex());
+            if (regraEscolhida.isEmpty()) return;
 
             Sessao sessao;
             if (tipo.getSelectedIndex() == 0) {
                 sessao = new SessaoAoVivo(titulo.getText().trim(), dataHora, limite,
-                        plataforma.getText().trim(), detalhe.getText().trim(), regraEscolhida);
+                        plataforma.getText().trim(), detalhe.getText().trim(), regraEscolhida.get());
             } else {
                 sessao = new SessaoPorTexto(titulo.getText().trim(), dataHora, limite,
-                        plataforma.getText().trim(), detalhe.getText().trim(), regraEscolhida);
+                        plataforma.getText().trim(), detalhe.getText().trim(), regraEscolhida.get());
             }
             gerenciador.adicionarSessao(campanha, sessao);
             titulo.setText(""); data.setText(""); plataforma.setText(""); detalhe.setText("");
@@ -204,19 +206,16 @@ public class TelaPrincipal extends JFrame {
         return painel;
     }
 
-    private List<Jogador> selecionarConvidados() {
+    private Optional<RegraParticipacao> criarRegraParticipacao(int indiceRegra) {
+        if (indiceRegra == 0) {
+            return Optional.of(new EntradaLivre());
+        }
+
         if (gerenciador.getJogadores().isEmpty())
             throw new IllegalArgumentException("Cadastre jogadores antes de criar uma sessão por convite.");
 
-        JList<Jogador> selecao = new JList<>(gerenciador.getJogadores().toArray(new Jogador[0]));
-        selecao.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        int resultado = JOptionPane.showConfirmDialog(this, new JScrollPane(selecao),
-                "Selecione os jogadores convidados", JOptionPane.OK_CANCEL_OPTION);
-        if (resultado != JOptionPane.OK_OPTION)
-            throw new IllegalArgumentException("Criação da sessão cancelada.");
-        if (selecao.getSelectedValuesList().isEmpty())
-            throw new IllegalArgumentException("Selecione pelo menos um jogador convidado.");
-        return new ArrayList<>(selecao.getSelectedValuesList());
+        return seletorConvidados.selecionar(this, gerenciador.getJogadores())
+                .map(EntradaPorConvite::new);
     }
 
     private Sessao sessaoSelecionada() {
