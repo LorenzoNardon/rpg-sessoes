@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class TelaPrincipal extends JFrame {
-    private final GerenciadorRpg gerenciador = new GerenciadorRpg();
+    private final GerenciadorRpg gerenciador;
     private final SeletorConvidados seletorConvidados;
     private final DefaultListModel<Jogador> modeloJogadores = new DefaultListModel<>();
     private final DefaultListModel<Campanha> modeloCampanhas = new DefaultListModel<>();
@@ -31,11 +31,12 @@ public class TelaPrincipal extends JFrame {
     private final JLabel resumoSessao = new JLabel("Selecione uma sessão para ver os detalhes.");
     private final DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public TelaPrincipal() {
-        this(new DialogoSelecaoConvidados());
+    public TelaPrincipal(GerenciadorRpg gerenciador) {
+        this(gerenciador, new DialogoSelecaoConvidados());
     }
 
-    public TelaPrincipal(SeletorConvidados seletorConvidados) {
+    public TelaPrincipal(GerenciadorRpg gerenciador, SeletorConvidados seletorConvidados) {
+        this.gerenciador = Objects.requireNonNull(gerenciador);
         this.seletorConvidados = Objects.requireNonNull(seletorConvidados);
         setTitle("Gerenciador de Sessões RPG");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -81,6 +82,15 @@ public class TelaPrincipal extends JFrame {
         formulario.add(cadastrar);
         painel.add(formulario, BorderLayout.WEST);
         painel.add(new JScrollPane(listaJogadores), BorderLayout.CENTER);
+
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton editar = new JButton("Editar selecionado");
+        editar.addActionListener(e -> editarJogadorSelecionado());
+        JButton excluir = new JButton("Excluir selecionado");
+        excluir.addActionListener(e -> excluirJogadorSelecionado());
+        acoes.add(editar);
+        acoes.add(excluir);
+        painel.add(acoes, BorderLayout.SOUTH);
         return painel;
     }
 
@@ -104,6 +114,15 @@ public class TelaPrincipal extends JFrame {
         formulario.add(cadastrar);
         painel.add(formulario, BorderLayout.WEST);
         painel.add(new JScrollPane(listaCampanhas), BorderLayout.CENTER);
+
+        JPanel acoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton editar = new JButton("Editar selecionada");
+        editar.addActionListener(e -> editarCampanhaSelecionada());
+        JButton excluir = new JButton("Excluir selecionada");
+        excluir.addActionListener(e -> excluirCampanhaSelecionada());
+        acoes.add(editar);
+        acoes.add(excluir);
+        painel.add(acoes, BorderLayout.SOUTH);
         return painel;
     }
 
@@ -175,7 +194,7 @@ public class TelaPrincipal extends JFrame {
         inscrever.addActionListener(e -> executar(() -> {
             Sessao s = sessaoSelecionada();
             Jogador j = jogadorSelecionado();
-            s.adicionarJogador(j);
+            gerenciador.inscreverJogador(s, j);
             atualizarListas();
             mensagem("Jogador inscrito.");
         }));
@@ -191,13 +210,17 @@ public class TelaPrincipal extends JFrame {
             int escolha = JOptionPane.showOptionDialog(this, "Selecione a presença:", "Presença",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
             if (escolha < 0) return;
-            s.registrarPresenca(j, escolha == 0 ? StatusPresenca.PRESENTE : StatusPresenca.AUSENTE);
+            gerenciador.registrarPresenca(s, j,
+                    escolha == 0 ? StatusPresenca.PRESENTE : StatusPresenca.AUSENTE);
             atualizarListas();
             mensagem("Presença registrada.");
         }));
         JButton finalizar = new JButton("Finalizar"); finalizar.addActionListener(e -> alterarSessao(1));
         JButton cancelar = new JButton("Cancelar"); cancelar.addActionListener(e -> alterarSessao(2));
-        acoes.add(inscrever); acoes.add(iniciar); acoes.add(presenca); acoes.add(finalizar); acoes.add(cancelar);
+        JButton excluir = new JButton("Excluir sessão");
+        excluir.addActionListener(e -> excluirSessaoSelecionada());
+        acoes.add(inscrever); acoes.add(iniciar); acoes.add(presenca); acoes.add(finalizar);
+        acoes.add(cancelar); acoes.add(excluir);
         lado.add(acoes, BorderLayout.SOUTH);
 
         JSplitPane divisao = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formulario, lado);
@@ -233,12 +256,120 @@ public class TelaPrincipal extends JFrame {
     private void alterarSessao(int acao) {
         executar(() -> {
             Sessao sessao = sessaoSelecionada();
-            if (acao == 0) sessao.iniciar();
-            else if (acao == 1) sessao.finalizar();
-            else sessao.cancelar();
+            if (acao == 0) gerenciador.iniciarSessao(sessao);
+            else if (acao == 1) gerenciador.finalizarSessao(sessao);
+            else gerenciador.cancelarSessao(sessao);
             atualizarListas();
             mensagem("Operação realizada com sucesso.");
         });
+    }
+
+    private void editarJogadorSelecionado() {
+        Jogador jogador = listaJogadores.getSelectedValue();
+        if (jogador == null) {
+            aviso("Selecione um jogador na lista.");
+            return;
+        }
+
+        JTextField nome = new JTextField(jogador.getNome());
+        JTextField personagem = new JTextField(jogador.getNomePersonagem());
+        JPanel formulario = formularioEdicao(
+                "Nome do jogador", nome,
+                "Nome do personagem", personagem
+        );
+        if (JOptionPane.showConfirmDialog(this, formulario, "Editar jogador",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) return;
+
+        executar(() -> {
+            gerenciador.atualizarJogador(jogador, nome.getText().trim(), personagem.getText().trim());
+            atualizarListas();
+            mensagem("Jogador atualizado com sucesso.");
+        });
+    }
+
+    private void excluirJogadorSelecionado() {
+        Jogador jogador = listaJogadores.getSelectedValue();
+        if (jogador == null) {
+            aviso("Selecione um jogador na lista.");
+            return;
+        }
+        if (!confirmarExclusao("Excluir o jogador " + jogador.getNome() + "?")) return;
+
+        executar(() -> {
+            gerenciador.excluirJogador(jogador);
+            atualizarListas();
+            mensagem("Jogador excluído com sucesso.");
+        });
+    }
+
+    private void editarCampanhaSelecionada() {
+        Campanha campanha = listaCampanhas.getSelectedValue();
+        if (campanha == null) {
+            aviso("Selecione uma campanha na lista.");
+            return;
+        }
+
+        JTextField nome = new JTextField(campanha.getNome());
+        JTextField sistema = new JTextField(campanha.getSistemaRpg());
+        JPanel formulario = formularioEdicao(
+                "Nome da campanha", nome,
+                "Sistema de RPG", sistema
+        );
+        if (JOptionPane.showConfirmDialog(this, formulario, "Editar campanha",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) return;
+
+        executar(() -> {
+            gerenciador.atualizarCampanha(campanha, nome.getText().trim(), sistema.getText().trim());
+            atualizarListas();
+            mensagem("Campanha atualizada com sucesso.");
+        });
+    }
+
+    private void excluirCampanhaSelecionada() {
+        Campanha campanha = listaCampanhas.getSelectedValue();
+        if (campanha == null) {
+            aviso("Selecione uma campanha na lista.");
+            return;
+        }
+        if (!confirmarExclusao("Excluir a campanha " + campanha.getNome() + "?")) return;
+
+        executar(() -> {
+            gerenciador.excluirCampanha(campanha);
+            atualizarListas();
+            mensagem("Campanha excluída com sucesso.");
+        });
+    }
+
+    private void excluirSessaoSelecionada() {
+        Sessao sessao;
+        try {
+            sessao = sessaoSelecionada();
+        } catch (RuntimeException ex) {
+            aviso(ex.getMessage());
+            return;
+        }
+        if (!confirmarExclusao("Excluir a sessão " + sessao.getTitulo() + "?")) return;
+
+        executar(() -> {
+            gerenciador.excluirSessao(sessao);
+            atualizarListas();
+            mensagem("Sessão excluída com sucesso.");
+        });
+    }
+
+    private JPanel formularioEdicao(String rotuloPrimeiro, JTextField primeiro,
+                                    String rotuloSegundo, JTextField segundo) {
+        JPanel formulario = new JPanel(new GridLayout(0, 1, 5, 5));
+        formulario.add(new JLabel(rotuloPrimeiro));
+        formulario.add(primeiro);
+        formulario.add(new JLabel(rotuloSegundo));
+        formulario.add(segundo);
+        return formulario;
+    }
+
+    private boolean confirmarExclusao(String mensagem) {
+        return JOptionPane.showConfirmDialog(this, mensagem, "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
     private void atualizarDetalhesSessao() {
@@ -292,5 +423,9 @@ public class TelaPrincipal extends JFrame {
 
     private void mensagem(String texto) {
         JOptionPane.showMessageDialog(this, texto, "Gerenciador de RPG", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void aviso(String texto) {
+        JOptionPane.showMessageDialog(this, texto, "Atenção", JOptionPane.WARNING_MESSAGE);
     }
 }
