@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: rpg-sessoes-postgres
+    environment:
+      POSTGRES_DB: rpg_sessoes
+      POSTGRES_USER: rpg_app
+      POSTGRES_PASSWORD: rpg_app
+    ports:
+      - "${RPG_DB_PORT:-5432}:5432"
+    volumes:
+      - rpg_sessoes_dados:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rpg_app -d rpg_sessoes"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  rpg_sessoes_dados:
