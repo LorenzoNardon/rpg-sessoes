@@ -1,6 +1,6 @@
-package rpg.regra;
+package rpg.dominio.regra;
 
-import rpg.modelo.Jogador;
+import rpg.dominio.modelo.Jogador;
 
 import java.util.List;
 

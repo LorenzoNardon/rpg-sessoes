@@ -1,4 +1,4 @@
-import rpg.interfacegrafica.TelaPrincipal;
+import rpg.apresentacao.interfacegrafica.TelaPrincipal;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;

@@ -1,7 +1,7 @@
-package rpg.interfacegrafica;
+package rpg.apresentacao.interfacegrafica;
 
-import rpg.modelo.*;
-import rpg.regra.*;
+import rpg.dominio.modelo.*;
+import rpg.dominio.regra.*;
 import rpg.servico.GerenciadorRpg;
 
 import javax.swing.*;

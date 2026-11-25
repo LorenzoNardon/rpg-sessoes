@@ -1,6 +1,6 @@
-package rpg.interfacegrafica;
+package rpg.apresentacao.interfacegrafica;
 
-import rpg.modelo.Jogador;
+import rpg.dominio.modelo.Jogador;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;

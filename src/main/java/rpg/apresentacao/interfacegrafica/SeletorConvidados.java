@@ -1,6 +1,6 @@
-package rpg.interfacegrafica;
+package rpg.apresentacao.interfacegrafica;
 
-import rpg.modelo.Jogador;
+import rpg.dominio.modelo.Jogador;
 
 import java.awt.Component;
 import java.util.List;

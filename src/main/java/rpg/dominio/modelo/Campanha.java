@@ -1,5 +1,5 @@
 
-package rpg.modelo;
+package rpg.dominio.modelo;
 
 import java.util.ArrayList;
 import java.util.Collections;

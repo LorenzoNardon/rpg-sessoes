@@ -1,17 +1,17 @@
-package rpg.modelo;
+package rpg.dominio.modelo;
 
-import rpg.regra.RegraParticipacao;
+import rpg.dominio.regra.RegraParticipacao;
 
 import java.time.LocalDateTime;
 
-public class SessaoAoVivo extends Sessao {
+public class SessaoPorTexto extends Sessao {
 
     private final String plataforma;
-    private final String linkSala;
+    private final String canal;
 
-    public SessaoAoVivo(String titulo, LocalDateTime dataHora,
-                        int capacidadeMaxima, String plataforma,
-                        String linkSala, RegraParticipacao regraParticipacao) {
+    public SessaoPorTexto(String titulo, LocalDateTime dataHora,
+                          int capacidadeMaxima, String plataforma,
+                          String canal, RegraParticipacao regraParticipacao) {
 
         super(titulo, dataHora, capacidadeMaxima, regraParticipacao);
 
@@ -19,27 +19,27 @@ public class SessaoAoVivo extends Sessao {
             throw new IllegalArgumentException("A plataforma é obrigatória.");
         }
 
-        if (linkSala == null || linkSala.isBlank()) {
-            throw new IllegalArgumentException("O link da sala é obrigatório.");
+        if (canal == null || canal.isBlank()) {
+            throw new IllegalArgumentException("O canal é obrigatório.");
         }
 
         this.plataforma = plataforma;
-        this.linkSala = linkSala;
+        this.canal = canal;
     }
 
     public String getPlataforma() {
         return plataforma;
     }
 
-    public String getLinkSala() {
-        return linkSala;
+    public String getCanal() {
+        return canal;
     }
 
     @Override
     public String gerarResumo() {
-        return "Sessão ao vivo: " + getTitulo()
+        return "Sessão por texto: " + getTitulo()
                 + " | Plataforma: " + plataforma
-                + " | Link: " + linkSala;
+                + " | Canal: " + canal;
     }
     @Override
     public String toString() {

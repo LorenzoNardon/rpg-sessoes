@@ -1,4 +1,4 @@
-package rpg.modelo;
+package rpg.dominio.modelo;
 
 public enum StatusPresenca {
     PENDENTE,

@@ -1,8 +1,8 @@
 package rpg.servico;
 
-import rpg.modelo.Campanha;
-import rpg.modelo.Jogador;
-import rpg.modelo.Sessao;
+import rpg.dominio.modelo.Campanha;
+import rpg.dominio.modelo.Jogador;
+import rpg.dominio.modelo.Sessao;
 
 import java.util.ArrayList;
 import java.util.Collections;

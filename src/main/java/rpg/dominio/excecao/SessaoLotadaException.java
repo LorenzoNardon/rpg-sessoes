@@ -1,4 +1,4 @@
-package rpg.excecao;
+package rpg.dominio.excecao;
 
 public class SessaoLotadaException extends RuntimeException {
     public SessaoLotadaException(String message) {

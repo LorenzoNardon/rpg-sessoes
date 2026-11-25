@@ -1,4 +1,4 @@
-package rpg.excecao;
+package rpg.dominio.excecao;
 
 public class TransicaoStatusInvalidaException extends RuntimeException {
     public TransicaoStatusInvalidaException(String message) {

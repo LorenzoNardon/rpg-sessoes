@@ -1,5 +1,5 @@
 
-package rpg.modelo;
+package rpg.dominio.modelo;
 
 public class Jogador {
 

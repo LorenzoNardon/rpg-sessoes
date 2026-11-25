@@ -1,10 +1,10 @@
-package rpg.modelo;
+package rpg.dominio.modelo;
 
-import rpg.excecao.JogadorJaInscritoException;
-import rpg.excecao.RegraParticipacaoException;
-import rpg.excecao.SessaoLotadaException;
-import rpg.excecao.TransicaoStatusInvalidaException;
-import rpg.regra.RegraParticipacao;
+import rpg.dominio.excecao.JogadorJaInscritoException;
+import rpg.dominio.excecao.RegraParticipacaoException;
+import rpg.dominio.excecao.SessaoLotadaException;
+import rpg.dominio.excecao.TransicaoStatusInvalidaException;
+import rpg.dominio.regra.RegraParticipacao;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
