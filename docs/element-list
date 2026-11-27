@@ -1,0 +1,9 @@
+unnamed package
+rpg.aplicacao.repositorio
+rpg.apresentacao.interfacegrafica
+rpg.dominio.excecao
+rpg.dominio.modelo
+rpg.dominio.regra
+rpg.infraestrutura.configuracao
+rpg.infraestrutura.persistencia.jdbc
+rpg.servico

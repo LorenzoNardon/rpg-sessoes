@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"rpg.aplicacao.repositorio"},{"l":"rpg.apresentacao.interfacegrafica"},{"l":"rpg.dominio.excecao"},{"l":"rpg.dominio.modelo"},{"l":"rpg.dominio.regra"},{"l":"rpg.infraestrutura.configuracao"},{"l":"rpg.infraestrutura.persistencia.jdbc"},{"l":"rpg.servico"}];updateSearchResults();
