@@ -22,7 +22,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Implementação JDBC do repositório de sessões.
+ * Responsável por realizar as operações de cadastro, exclusão,
+ * consulta e atualização das sessões no banco de dados,
+ * incluindo o gerenciamento de convidados e participantes.
+ */
 public final class JdbcSessaoRepositorio implements SessaoRepositorio {
+
+    /** Campos da tabela sessão utilizados nas consultas SQL. */
     private static final String CAMPOS_SESSAO = """
             id, titulo, data_hora, capacidade_maxima, tipo, plataforma,
             local_acesso, regra_participacao, status
@@ -30,10 +38,22 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
 
     private final DataSource dataSource;
 
+    /**
+     * Cria o repositório utilizando a fonte de dados informada.
+     *
+     * @param dataSource fonte de dados utilizada para acessar o banco
+     */
     public JdbcSessaoRepositorio(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+    /**
+     * Salva uma nova sessão vinculada a uma campanha.
+     * Também registra os convidados, caso a participação seja por convite.
+     *
+     * @param campanhaId identificador da campanha
+     * @param sessao sessão que será cadastrada
+     */
     @Override
     public void salvar(UUID campanhaId, Sessao sessao) {
         String sql = """
@@ -60,6 +80,11 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Exclui uma sessão pelo seu identificador.
+     *
+     * @param id identificador da sessão que será excluída
+     */
     @Override
     public void excluir(UUID id) {
         String sql = "DELETE FROM sessao WHERE id = ?";
@@ -71,6 +96,13 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Busca uma sessão pelo seu identificador.
+     *
+     * @param id identificador da sessão
+     * @return um Optional contendo a sessão, caso seja encontrada,
+     *         ou vazio caso não exista
+     */
     @Override
     public Optional<Sessao> buscarPorId(UUID id) {
         String sql = "SELECT " + CAMPOS_SESSAO + " FROM sessao WHERE id = ?";
@@ -84,6 +116,13 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Lista todas as sessões vinculadas a uma campanha,
+     * ordenadas pela data e hora.
+     *
+     * @param campanhaId identificador da campanha
+     * @return lista de sessões encontradas
+     */
     @Override
     public List<Sessao> listarPorCampanha(UUID campanhaId) {
         String sql = "SELECT " + CAMPOS_SESSAO + " FROM sessao WHERE campanha_id = ? ORDER BY data_hora";
@@ -99,6 +138,13 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Registra a participação de um jogador em uma sessão.
+     *
+     * @param sessaoId identificador da sessão
+     * @param jogadorId identificador do jogador
+     * @param presenca status de presença do jogador
+     */
     @Override
     public void salvarParticipacao(UUID sessaoId, UUID jogadorId, StatusPresenca presenca) {
         String sql = "INSERT INTO sessao_participante (sessao_id, jogador_id, presenca) VALUES (?, ?, ?)";
@@ -112,6 +158,13 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Atualiza o status de presença de um jogador em uma sessão.
+     *
+     * @param sessaoId identificador da sessão
+     * @param jogadorId identificador do jogador
+     * @param presenca novo status de presença
+     */
     @Override
     public void atualizarPresenca(UUID sessaoId, UUID jogadorId, StatusPresenca presenca) {
         String sql = "UPDATE sessao_participante SET presenca = ? WHERE sessao_id = ? AND jogador_id = ?";
@@ -125,6 +178,12 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Atualiza o status de uma sessão.
+     *
+     * @param sessaoId identificador da sessão
+     * @param status novo status da sessão
+     */
     @Override
     public void atualizarStatus(UUID sessaoId, StatusSessao status) {
         String sql = "UPDATE sessao SET status = ? WHERE id = ?";
@@ -137,6 +196,12 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Verifica se uma campanha possui sessões cadastradas.
+     *
+     * @param campanhaId identificador da campanha
+     * @return true se a campanha possuir sessões, ou false caso contrário
+     */
     @Override
     public boolean campanhaPossuiSessoes(UUID campanhaId) {
         String sql = "SELECT EXISTS (SELECT 1 FROM sessao WHERE campanha_id = ?)";
@@ -151,6 +216,16 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Preenche os parâmetros do comando SQL com os dados da sessão.
+     * Identifica o tipo de sessão e a regra de participação para
+     * armazenar as informações correspondentes.
+     *
+     * @param comando comando SQL que receberá os valores
+     * @param campanhaId identificador da campanha vinculada
+     * @param sessao sessão cujos dados serão utilizados
+     * @throws SQLException caso ocorra um erro ao preencher os parâmetros
+     */
     private void preencherSessao(java.sql.PreparedStatement comando, UUID campanhaId, Sessao sessao)
             throws SQLException {
         boolean aoVivo = sessao instanceof SessaoAoVivo;
@@ -173,6 +248,15 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         comando.setString(10, sessao.getStatus().name());
     }
 
+    /**
+     * Salva os jogadores convidados para uma sessão.
+     * Caso a regra de participação não seja por convite,
+     * nenhuma operação é realizada.
+     *
+     * @param conexao conexão utilizada com o banco de dados
+     * @param sessao sessão que contém a lista de convidados
+     * @throws SQLException caso ocorra um erro ao salvar os convidados
+     */
     private void salvarConvidados(Connection conexao, Sessao sessao) throws SQLException {
         if (!(sessao.getRegraParticipacao() instanceof EntradaPorConvite entrada)) return;
 
@@ -187,6 +271,16 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         }
     }
 
+    /**
+     * Converte um registro do banco de dados em um objeto Sessao.
+     * Também carrega a regra de participação e os dados de presença
+     * dos jogadores associados à sessão.
+     *
+     * @param conexao conexão utilizada para consultar os dados relacionados
+     * @param resultado resultado da consulta SQL
+     * @return sessão reconstruída com os dados encontrados
+     * @throws SQLException caso ocorra um erro ao acessar os dados
+     */
     private Sessao mapearSessao(Connection conexao, ResultSet resultado) throws SQLException {
         UUID id = resultado.getObject("id", UUID.class);
         RegraParticipacao regra = "CONVITE".equals(resultado.getString("regra_participacao"))
@@ -209,6 +303,14 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         );
     }
 
+    /**
+     * Carrega a lista de jogadores convidados para uma sessão.
+     *
+     * @param conexao conexão utilizada com o banco de dados
+     * @param sessaoId identificador da sessão
+     * @return lista de jogadores convidados, ordenada pelo nome
+     * @throws SQLException caso ocorra um erro ao consultar os convidados
+     */
     private List<Jogador> carregarConvidados(Connection conexao, UUID sessaoId) throws SQLException {
         String sql = """
                 SELECT j.id, j.nome, j.nome_personagem
@@ -227,6 +329,16 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         return convidados;
     }
 
+    /**
+     * Carrega os jogadores participantes de uma sessão e seus
+     * respectivos status de presença.
+     *
+     * @param conexao conexão utilizada com o banco de dados
+     * @param sessaoId identificador da sessão
+     * @return mapa contendo os jogadores e seus status de presença,
+     *         mantendo a ordem de consulta
+     * @throws SQLException caso ocorra um erro ao consultar as presenças
+     */
     private Map<Jogador, StatusPresenca> carregarPresencas(Connection conexao, UUID sessaoId)
             throws SQLException {
         String sql = """
@@ -248,6 +360,13 @@ public final class JdbcSessaoRepositorio implements SessaoRepositorio {
         return presencas;
     }
 
+    /**
+     * Converte um registro do banco de dados em um objeto Jogador.
+     *
+     * @param resultado resultado da consulta SQL
+     * @return jogador reconstruído com os dados do registro
+     * @throws SQLException caso ocorra um erro ao acessar os dados do registro
+     */
     private Jogador mapearJogador(ResultSet resultado) throws SQLException {
         return Jogador.reconstituir(
                 resultado.getObject("id", UUID.class),

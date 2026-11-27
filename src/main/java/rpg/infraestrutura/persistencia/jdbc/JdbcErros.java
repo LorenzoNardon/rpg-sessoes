@@ -4,10 +4,27 @@ import rpg.dominio.excecao.PersistenciaException;
 
 import java.sql.SQLException;
 
+/**
+ * Classe responsável por traduzir erros do banco de dados
+ * em exceções de persistência da aplicação.
+ */
 final class JdbcErros {
+
+    /**
+     * Construtor privado para impedir a criação de objetos
+     * dessa classe.
+     */
     private JdbcErros() {
     }
 
+    /**
+     * Analisa o código de erro do banco de dados e retorna
+     * uma exceção com uma mensagem adequada para a aplicação.
+     *
+     * @param operacao operação que estava sendo realizada
+     * @param excecao exceção original gerada pelo banco de dados
+     * @return exceção de persistência com a mensagem correspondente
+     */
     static PersistenciaException traduzir(String operacao, SQLException excecao) {
         String estado = excecao.getSQLState();
         String mensagem = switch (estado == null ? "" : estado) {

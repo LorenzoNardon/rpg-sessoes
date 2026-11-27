@@ -11,13 +11,29 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Implementação JDBC do repositório de jogadores.
+ * Responsável por realizar as operações de cadastro,
+ * atualização, exclusão e consulta de jogadores no banco de dados.
+ */
 public final class JdbcJogadorRepositorio implements JogadorRepositorio {
+
     private final DataSource dataSource;
 
+    /**
+     * Cria o repositório utilizando a fonte de dados informada.
+     *
+     * @param dataSource fonte de dados utilizada para acessar o banco
+     */
     public JdbcJogadorRepositorio(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+    /**
+     * Salva um novo jogador no banco de dados.
+     *
+     * @param jogador jogador que será cadastrado
+     */
     @Override
     public void salvar(Jogador jogador) {
         String sql = "INSERT INTO jogador (id, nome, nome_personagem) VALUES (?, ?, ?)";
@@ -31,6 +47,11 @@ public final class JdbcJogadorRepositorio implements JogadorRepositorio {
         }
     }
 
+    /**
+     * Atualiza os dados de um jogador existente no banco de dados.
+     *
+     * @param jogador jogador com os dados atualizados
+     */
     @Override
     public void atualizar(Jogador jogador) {
         String sql = "UPDATE jogador SET nome = ?, nome_personagem = ? WHERE id = ?";
@@ -44,6 +65,11 @@ public final class JdbcJogadorRepositorio implements JogadorRepositorio {
         }
     }
 
+    /**
+     * Exclui um jogador pelo seu identificador.
+     *
+     * @param id identificador do jogador que será excluído
+     */
     @Override
     public void excluir(UUID id) {
         String sql = "DELETE FROM jogador WHERE id = ?";
@@ -55,6 +81,13 @@ public final class JdbcJogadorRepositorio implements JogadorRepositorio {
         }
     }
 
+    /**
+     * Busca um jogador pelo seu identificador.
+     *
+     * @param id identificador do jogador
+     * @return um Optional contendo o jogador, caso seja encontrado,
+     *         ou vazio caso não exista
+     */
     @Override
     public Optional<Jogador> buscarPorId(UUID id) {
         String sql = "SELECT id, nome, nome_personagem FROM jogador WHERE id = ?";
@@ -68,6 +101,11 @@ public final class JdbcJogadorRepositorio implements JogadorRepositorio {
         }
     }
 
+    /**
+     * Lista todos os jogadores cadastrados, ordenados pelo nome.
+     *
+     * @return lista contendo os jogadores encontrados
+     */
     @Override
     public List<Jogador> listarTodos() {
         String sql = "SELECT id, nome, nome_personagem FROM jogador ORDER BY LOWER(nome)";
@@ -81,6 +119,13 @@ public final class JdbcJogadorRepositorio implements JogadorRepositorio {
         }
     }
 
+    /**
+     * Verifica se um jogador possui vínculos com sessões cadastradas,
+     * seja como convidado ou como participante.
+     *
+     * @param id identificador do jogador
+     * @return true se o jogador possuir vínculos, ou false caso contrário
+     */
     @Override
     public boolean possuiVinculos(UUID id) {
         String sql = """
@@ -102,6 +147,13 @@ public final class JdbcJogadorRepositorio implements JogadorRepositorio {
         }
     }
 
+    /**
+     * Converte um registro do banco de dados em um objeto Jogador.
+     *
+     * @param resultado resultado da consulta SQL
+     * @return jogador reconstruído com os dados do registro
+     * @throws SQLException caso ocorra um erro ao acessar os dados do registro
+     */
     private Jogador mapear(ResultSet resultado) throws SQLException {
         return Jogador.reconstituir(
                 resultado.getObject("id", UUID.class),
