@@ -1,6 +1,6 @@
 package rpg.infraestrutura.persistencia.jdbc;
 
-import rpg.aplicacao.excecao.PersistenciaException;
+import rpg.dominio.excecao.PersistenciaException;
 
 import java.sql.SQLException;
 
