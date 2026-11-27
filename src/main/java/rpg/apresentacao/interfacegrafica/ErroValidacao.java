@@ -1,4 +1,3 @@
-
 package rpg.apresentacao.interfacegrafica;
 
 import javax.swing.JComponent;
@@ -9,22 +8,25 @@ import javax.swing.JComponent;
  */
 public class ErroValidacao extends IllegalArgumentException {
 
-    // Referência ao campo da interface que contém o erro.
-    // transient indica que esse atributo não será serializado.
+    /** Campo da interface que contém o erro; {@code transient} evita a serialização. */
     private final transient JComponent campo;
 
-    // Construtor que recebe a mensagem do erro e o campo relacionado.
+    /**
+     * Cria o erro com a mensagem e o campo relacionado.
+     *
+     * @param mensagem descrição do problema
+     * @param campo    componente que deverá receber o foco para correção
+     */
     public ErroValidacao(String mensagem, JComponent campo) {
-        // Encaminha a mensagem para a classe pai,
-        // permitindo utilizar os mecanismos padrão de exceções do Java.
         super(mensagem);
-
-        // Armazena o componente que deverá receber o foco para correção.
         this.campo = campo;
     }
 
-    // Retorna o componente da interface associado ao erro.
-    // É utilizado para direcionar o foco ao campo que precisa ser corrigido.
+    /**
+     * Retorna o componente associado ao erro, usado para direcionar o foco à correção.
+     *
+     * @return campo com problema
+     */
     public JComponent getCampo() {
         return campo;
     }

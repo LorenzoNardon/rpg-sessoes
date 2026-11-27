@@ -1,4 +1,3 @@
-
 package rpg.apresentacao.interfacegrafica;
 
 import rpg.dominio.modelo.StatusPresenca;
@@ -53,21 +52,24 @@ import static rpg.apresentacao.interfacegrafica.Tema.*;
  */
 public final class Componentes {
 
-    // Propriedade usada para identificar se um campo está marcado com erro.
+    /** Propriedade usada para identificar se um campo está marcado com erro. */
     private static final String PROP_ERRO = "campoComErro";
 
-    // Construtor privado para impedir a criação de objetos dessa classe.
-    // Seus métodos são estáticos, então podem ser utilizados diretamente.
+    /**
+     * Construtor privado: os métodos da classe são estáticos.
+     */
     private Componentes() {
     }
 
-    // ---------------------------------------------------------------------
-    // Bordas
-    // ---------------------------------------------------------------------
-
-    // Cria uma borda com contorno colorido e espaçamento interno.
-    // A espessura define o tamanho da linha externa.
-    // Os parâmetros vertical e horizontal definem o espaço interno total.
+    /**
+     * Cria uma borda com contorno colorido e espaçamento interno.
+     *
+     * @param cor        cor do contorno
+     * @param espessura  espessura da linha externa
+     * @param vertical   espaço interno vertical total
+     * @param horizontal espaço interno horizontal total
+     * @return borda composta
+     */
     public static Border borda(Color cor, int espessura, int vertical, int horizontal) {
         return BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(cor, espessura),
@@ -75,64 +77,76 @@ public final class Componentes {
                         vertical - espessura, horizontal - espessura));
     }
 
-    // ---------------------------------------------------------------------
-    // Campos de texto
-    // ---------------------------------------------------------------------
-
-    // Campo de texto personalizado que permite exibir uma dica
-    // dentro dele enquanto não houver nenhum texto digitado.
+    /**
+     * Campo de texto que exibe uma dica enquanto não houver texto digitado.
+     */
     private static class CampoTexto extends JTextField {
+
+        /** Texto de dica exibido quando o campo está vazio. */
         private final String dica;
 
+        /**
+         * Cria o campo com um texto inicial e uma dica.
+         *
+         * @param texto texto inicial
+         * @param dica  dica exibida quando o campo está vazio (pode ser {@code null})
+         */
         CampoTexto(String texto, String dica) {
             super(texto);
             this.dica = dica;
         }
 
-        // Personaliza a aparência do campo para desenhar a dica.
+        /**
+         * Desenha o campo e, se estiver vazio, a dica em itálico.
+         *
+         * @param g contexto gráfico
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            // A dica só aparece quando existe uma dica configurada
-            // e o campo está vazio.
             if (dica != null && getText().isEmpty()) {
                 Graphics2D g2 = (Graphics2D) g.create();
 
-                // Melhora a qualidade visual das letras.
                 g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                         RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-                // Define a cor e o estilo da dica.
                 g2.setColor(new Color(0x8A869B));
                 g2.setFont(getFont().deriveFont(Font.ITALIC));
 
-                // Obtém as informações necessárias para posicionar o texto.
                 FontMetrics fm = g2.getFontMetrics();
                 Insets in = getInsets();
 
-                // Calcula a posição vertical para centralizar a dica no campo.
                 int y = in.top + (getHeight() - in.top - in.bottom - fm.getHeight()) / 2 + fm.getAscent();
 
-                // Desenha a dica dentro do campo.
                 g2.drawString(dica, in.left, y);
 
-                // Libera os recursos gráficos utilizados.
                 g2.dispose();
             }
         }
     }
 
-    // Cria um campo de texto vazio com uma dica.
+    /**
+     * Cria um campo de texto vazio com uma dica.
+     *
+     * @param dica dica exibida enquanto o campo estiver vazio
+     * @return campo de texto configurado
+     */
     public static JTextField campo(String dica) {
         return campo("", dica);
     }
 
-    // Cria um campo de texto com um texto inicial e uma dica.
+    /**
+     * Cria um campo de texto com um texto inicial e uma dica.
+     * A borda acompanha o foco e o estado de erro, que é removido quando o usuário volta a digitar.
+     *
+     * @param texto texto inicial
+     * @param dica  dica exibida enquanto o campo estiver vazio (pode ser {@code null})
+     * @return campo de texto configurado
+     */
     public static JTextField campo(String texto, String dica) {
         CampoTexto campo = new CampoTexto(texto, dica);
 
-        // Configura a quantidade de colunas e as cores do campo.
         campo.setColumns(18);
         campo.setBackground(Color.WHITE);
         campo.setForeground(COR_TEXTO);
@@ -140,10 +154,8 @@ public final class Componentes {
         campo.setSelectionColor(COR_SELECAO);
         campo.setSelectedTextColor(COR_TEXTO);
 
-        // Define a borda inicial do campo.
         atualizarBordaCampo(campo);
 
-        // Atualiza a borda quando o campo recebe ou perde o foco.
         campo.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -156,9 +168,6 @@ public final class Componentes {
             }
         });
 
-        // Observa alterações no conteúdo do campo.
-        // Quando o usuário começa a corrigir um campo com erro,
-        // a indicação visual de erro é removida.
         campo.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -179,34 +188,41 @@ public final class Componentes {
         return campo;
     }
 
-    // Atualiza a borda de acordo com o estado atual do campo:
-    // erro, foco ou estado normal.
+    /**
+     * Atualiza a borda de acordo com o estado atual do campo: erro, foco ou normal.
+     *
+     * @param campo componente cuja borda será atualizada
+     */
     private static void atualizarBordaCampo(JComponent campo) {
         if (Boolean.TRUE.equals(campo.getClientProperty(PROP_ERRO))) {
-            // Campo com erro: borda vermelha.
             campo.setBorder(borda(COR_PERIGO, 2, 8, 10));
         } else if (campo.isFocusOwner()) {
-            // Campo selecionado: borda destacada.
             campo.setBorder(borda(COR_FOCO, 2, 8, 10));
         } else {
-            // Campo normal: borda padrão.
             campo.setBorder(borda(COR_BORDA, 1, 8, 10));
         }
 
-        // Solicita que o componente seja redesenhado.
         campo.repaint();
     }
 
-    /** Destaca o campo em vermelho até o usuário voltar a digitar nele. */
+    /**
+     * Destaca o campo em vermelho até o usuário voltar a digitar nele.
+     * Componentes que não são campos de texto são ignorados.
+     *
+     * @param campo componente a ser marcado
+     */
     public static void marcarErro(JComponent campo) {
-        // Só marca componentes que sejam campos de texto.
         if (campo instanceof JTextComponent) {
             campo.putClientProperty(PROP_ERRO, Boolean.TRUE);
             atualizarBordaCampo(campo);
         }
     }
 
-    // Remove a indicação de erro do campo, caso ela esteja ativa.
+    /**
+     * Remove a indicação de erro do campo, caso ela esteja ativa.
+     *
+     * @param campo componente a ser limpo
+     */
     private static void limparErro(JComponent campo) {
         if (Boolean.TRUE.equals(campo.getClientProperty(PROP_ERRO))) {
             campo.putClientProperty(PROP_ERRO, Boolean.FALSE);
@@ -214,29 +230,52 @@ public final class Componentes {
         }
     }
 
-    // Verifica se o campo contém algum texto.
-    // Caso esteja vazio, lança um erro de validação associado ao campo.
+    /**
+     * Verifica se o campo contém algum texto e, se estiver vazio,
+     * lança um erro de validação associado a ele.
+     *
+     * @param campo  campo verificado
+     * @param rotulo nome do campo, usado na mensagem de erro
+     * @throws ErroValidacao se o campo estiver vazio
+     */
     public static void exigirTexto(JTextField campo, String rotulo) {
         if (campo.getText().trim().isEmpty())
             throw new ErroValidacao("Preencha o campo \"" + rotulo + "\".", campo);
     }
 
-    // ---------------------------------------------------------------------
-    // Botões
-    // ---------------------------------------------------------------------
-
-    // Define os estilos disponíveis para os botões da aplicação.
+    /**
+     * Estilos disponíveis para os botões da aplicação.
+     */
     public enum Variante {
+        /** Ação principal. */
         PRIMARIO(COR_PRIMARIA, COR_PRIMARIA_HOVER, Color.WHITE, COR_PRIMARIA_ESCURA),
+
+        /** Ação secundária. */
         SECUNDARIO(Color.WHITE, COR_SELECAO, COR_PRIMARIA_ESCURA, COR_PRIMARIA),
+
+        /** Ação destrutiva ou de risco. */
         PERIGO(COR_PERIGO, COR_PERIGO_HOVER, Color.WHITE, COR_PERIGO_HOVER);
 
-        // Cores utilizadas em cada estado do botão.
+        /** Cor de fundo normal. */
         final Color fundo;
+
+        /** Cor de fundo quando o mouse está sobre o botão. */
         final Color fundoHover;
+
+        /** Cor do texto. */
         final Color texto;
+
+        /** Cor do contorno. */
         final Color contorno;
 
+        /**
+         * Define as cores de cada estado do botão.
+         *
+         * @param fundo      cor de fundo normal
+         * @param fundoHover cor de fundo com o mouse sobre o botão
+         * @param texto      cor do texto
+         * @param contorno   cor do contorno
+         */
         Variante(Color fundo, Color fundoHover, Color texto, Color contorno) {
             this.fundo = fundo;
             this.fundoHover = fundoHover;
@@ -245,13 +284,21 @@ public final class Componentes {
         }
     }
 
-    // Cria um botão padronizado com texto, estilo, atalho de teclado,
-    // dica de utilização e ação executada quando ele é pressionado.
+    /**
+     * Cria um botão padronizado com texto, estilo, atalho de teclado,
+     * dica de utilização e ação executada ao ser pressionado.
+     *
+     * @param texto     texto do botão
+     * @param variante  estilo visual
+     * @param mnemonico tecla de atalho (usada com Alt), como {@link KeyEvent#VK_C}
+     * @param dica      descrição exibida ao passar o mouse
+     * @param acao      ação executada ao clicar
+     * @return botão configurado
+     */
     public static JButton botao(String texto, Variante variante, int mnemonico, String dica,
                                 ActionListener acao) {
         JButton botao = new JButton(texto);
 
-        // Configura a aparência inicial do botão.
         botao.setOpaque(true);
         botao.setContentAreaFilled(true);
         botao.setFocusPainted(false);
@@ -259,17 +306,13 @@ public final class Componentes {
         botao.setForeground(variante.texto);
         botao.setBorder(borda(variante.contorno, 1, 10, 16));
 
-        // Altera o cursor para indicar que o botão pode ser clicado.
         botao.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Define o atalho de teclado e a descrição exibida ao passar o mouse.
         botao.setMnemonic(mnemonico);
         botao.setToolTipText(dica + " (Alt+" + (char) mnemonico + ")");
 
-        // Associa a ação que será executada ao clicar no botão.
         botao.addActionListener(acao);
 
-        // Altera a cor de fundo quando o mouse entra ou sai do botão.
         botao.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -282,8 +325,6 @@ public final class Componentes {
             }
         });
 
-        // Destaca a borda quando o botão recebe o foco
-        // e restaura a borda original quando perde o foco.
         botao.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -299,40 +340,42 @@ public final class Componentes {
         return botao;
     }
 
-    // ---------------------------------------------------------------------
-    // Listas e combos
-    // ---------------------------------------------------------------------
-
-    // Renderizador personalizado responsável pela aparência
-    // dos itens exibidos em listas e caixas de seleção.
+    /**
+     * Renderizador responsável pela aparência dos itens de listas e caixas de seleção.
+     */
     private static class RenderizadorLista extends DefaultListCellRenderer {
+
+        /**
+         * Personaliza o rótulo de cada item: borda de foco, cores de seleção
+         * e cores especiais para presença, ausência e mensagens de lista vazia.
+         *
+         * @param lista       lista (ou combo) em desenho
+         * @param valor       valor do item
+         * @param indice      índice do item
+         * @param selecionado se o item está selecionado
+         * @param comFoco     se o item possui o foco
+         * @return componente usado para desenhar o item
+         */
         @Override
         public Component getListCellRendererComponent(JList<?> lista, Object valor, int indice,
                                                       boolean selecionado, boolean comFoco) {
 
-            // Obtém o rótulo padrão que será personalizado.
             JLabel rotulo = (JLabel) super.getListCellRendererComponent(lista, valor, indice, selecionado, comFoco);
 
-            // Define uma borda diferente quando o item está com foco.
             Border contorno = comFoco && indice >= 0
                     ? BorderFactory.createLineBorder(COR_FOCO, 1)
                     : new EmptyBorder(1, 1, 1, 1);
 
-            // Configura o espaçamento interno e a fonte do item.
             rotulo.setBorder(BorderFactory.createCompoundBorder(contorno, new EmptyBorder(5, 9, 5, 9)));
             rotulo.setFont(lista.getFont());
 
             if (selecionado) {
-                // Item selecionado: utiliza a cor de seleção.
                 rotulo.setBackground(COR_SELECAO);
                 rotulo.setForeground(COR_TEXTO);
             } else {
-                // Item não selecionado: utiliza as cores padrão.
                 rotulo.setBackground(Color.WHITE);
                 rotulo.setForeground(COR_TEXTO);
 
-                // Personaliza a cor de textos relacionados à presença
-                // e também de mensagens indicando ausência de itens.
                 if (valor instanceof String) {
                     String texto = (String) valor;
 
@@ -351,39 +394,46 @@ public final class Componentes {
         }
     }
 
-    // Configura a aparência e o comportamento de uma lista.
+    /**
+     * Configura a aparência e o comportamento de uma lista:
+     * seleção única, fundo branco, renderizador padrão e nome acessível.
+     *
+     * @param lista        lista a ser configurada
+     * @param nomeAcessivel nome lido por tecnologias assistivas
+     * @param <T>          tipo dos itens da lista
+     */
     public static <T> void estilizarLista(JList<T> lista, String nomeAcessivel) {
-        // Define o renderizador personalizado.
         lista.setCellRenderer(new RenderizadorLista());
-
-        // Permite selecionar somente um item por vez.
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Define o fundo da lista.
         lista.setBackground(Color.WHITE);
-
-        // Define um nome acessível para tecnologias assistivas.
         lista.getAccessibleContext().setAccessibleName(nomeAcessivel);
     }
 
-    // Aplica o mesmo padrão visual utilizado nas listas
-    // a uma caixa de seleção (JComboBox).
+    /**
+     * Aplica às caixas de seleção o mesmo padrão visual das listas.
+     *
+     * @param combo caixa de seleção a ser configurada
+     * @param <T>   tipo dos itens do combo
+     */
     public static <T> void estilizarCombo(JComboBox<T> combo) {
         combo.setRenderer(new RenderizadorLista());
         combo.setBackground(Color.WHITE);
         combo.setForeground(COR_TEXTO);
     }
 
-    // Coloca um componente dentro de uma área com rolagem.
+    /**
+     * Coloca um componente dentro de uma área com rolagem.
+     * Quando o conteúdo é uma lista, a borda é destacada enquanto ela tem o foco.
+     *
+     * @param conteudo componente a ser rolado
+     * @return área de rolagem configurada
+     */
     public static JScrollPane rolagem(JComponent conteudo) {
         JScrollPane rolagem = new JScrollPane(conteudo);
 
-        // Define a borda e a cor de fundo da área de rolagem.
         rolagem.setBorder(BorderFactory.createLineBorder(COR_BORDA));
         rolagem.getViewport().setBackground(Color.WHITE);
 
-        // Quando o conteúdo for uma lista, destaca a borda
-        // enquanto ela estiver com o foco.
         if (conteudo instanceof JList) {
             conteudo.addFocusListener(new FocusAdapter() {
                 @Override
@@ -401,34 +451,39 @@ public final class Componentes {
         return rolagem;
     }
 
-    // Monta um painel contendo uma lista e uma área de botões abaixo dela.
-    // Os botões são recebidos como parâmetros variáveis.
+    /**
+     * Monta um painel com uma lista (com rolagem) e uma área de botões abaixo dela.
+     *
+     * @param lista  lista exibida
+     * @param botoes botões posicionados à direita, abaixo da lista
+     * @return painel montado
+     */
     public static JPanel listaComAcoes(JList<?> lista, JButton... botoes) {
         JPanel conteudo = new JPanel(new BorderLayout(0, 10));
         conteudo.setOpaque(false);
 
-        // Cria o painel que organizará os botões à direita.
         JPanel acoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         acoes.setOpaque(false);
 
-        // Adiciona todos os botões recebidos ao painel de ações.
         for (JButton b : botoes) acoes.add(b);
 
-        // Adiciona a lista com rolagem e o painel de botões.
         conteudo.add(rolagem(lista), BorderLayout.CENTER);
         conteudo.add(acoes, BorderLayout.SOUTH);
 
         return conteudo;
     }
 
-    /** Enter/duplo clique edita e Delete exclui o item selecionado. Passe null para ignorar uma ação. */
+    /**
+     * Configura Enter e duplo clique para editar e Delete para excluir o item selecionado.
+     *
+     * @param lista   lista que receberá os atalhos
+     * @param editar  ação de edição, ou {@code null} para ignorá-la
+     * @param excluir ação de exclusão, ou {@code null} para ignorá-la
+     */
     public static void atalhosLista(JList<?> lista, Runnable editar, Runnable excluir) {
-        // Obtém os mapas responsáveis por associar teclas a ações.
         InputMap entradas = lista.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap acoes = lista.getActionMap();
 
-        // Configura a tecla Enter e o duplo clique para editar.
-        // Se a ação for null, a funcionalidade de edição não é configurada.
         if (editar != null) {
             entradas.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "editarItem");
 
@@ -439,7 +494,6 @@ public final class Componentes {
                 }
             });
 
-            // Também permite editar o item com um duplo clique do mouse.
             lista.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -448,8 +502,6 @@ public final class Componentes {
             });
         }
 
-        // Configura a tecla Delete para excluir o item selecionado.
-        // Se a ação for null, a funcionalidade de exclusão não é configurada.
         if (excluir != null) {
             entradas.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "excluirItem");
 
@@ -462,72 +514,80 @@ public final class Componentes {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Cartões e formulários
-    // ---------------------------------------------------------------------
-
-    // Cria um cartão visual com título, conteúdo e uma ação opcional no cabeçalho.
+    /**
+     * Cria um cartão visual com título, conteúdo e uma ação opcional no cabeçalho.
+     *
+     * @param titulo        título exibido no cabeçalho
+     * @param conteudo      conteúdo do cartão
+     * @param acaoCabecalho componente exibido à direita do cabeçalho (pode ser {@code null})
+     * @return cartão montado
+     */
     public static JPanel cartao(String titulo, JComponent conteudo, JComponent acaoCabecalho) {
         JPanel cartao = new JPanel(new BorderLayout(0, 10));
 
-        // Define a aparência externa do cartão.
         cartao.setBackground(Color.WHITE);
         cartao.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(COR_BORDA), new EmptyBorder(12, 14, 14, 14)));
 
-        // Cria e configura o título do cartão.
         JLabel rotulo = new JLabel(titulo);
         rotulo.setFont(rotulo.getFont().deriveFont(Font.BOLD, 16f));
         rotulo.setForeground(COR_PRIMARIA_ESCURA);
 
-        // Cria o cabeçalho e posiciona o título à esquerda.
         JPanel cabecalho = new JPanel(new BorderLayout());
         cabecalho.setOpaque(false);
         cabecalho.add(rotulo, BorderLayout.WEST);
 
-        // Adiciona uma ação no lado direito do cabeçalho, se ela existir.
         if (acaoCabecalho != null) cabecalho.add(acaoCabecalho, BorderLayout.EAST);
 
-        // Organiza o cabeçalho e o conteúdo dentro do cartão.
         cartao.add(cabecalho, BorderLayout.NORTH);
         cartao.add(conteudo, BorderLayout.CENTER);
 
         return cartao;
     }
 
-    // Cria um painel de formulário com organização em grade.
-    // A estrutura utiliza duas colunas: uma para os rótulos e outra para os campos.
+    /**
+     * Cria um painel de formulário em grade, com duas colunas:
+     * uma para os rótulos e outra para os campos.
+     *
+     * @return painel de formulário vazio
+     */
     public static JPanel formulario() {
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
         return form;
     }
 
-    // Controla automaticamente o número da próxima linha do formulário.
-    // A posição atual é armazenada como uma propriedade do próprio painel.
+    /**
+     * Controla o número da próxima linha do formulário,
+     * armazenado como propriedade do próprio painel.
+     *
+     * @param form formulário em construção
+     * @return índice da próxima linha livre
+     */
     private static int proximaLinha(JPanel form) {
         Integer atual = (Integer) form.getClientProperty("linha");
 
-        // Se ainda não existe uma linha registrada, começa pela posição zero.
         int linha = atual == null ? 0 : atual;
 
-        // Atualiza o contador para a próxima chamada.
         form.putClientProperty("linha", linha + 1);
 
         return linha;
     }
 
-    // Adiciona uma linha ao formulário contendo um rótulo e seu campo correspondente.
+    /**
+     * Adiciona ao formulário uma linha com um rótulo e o campo correspondente.
+     *
+     * @param form   formulário que receberá a linha
+     * @param rotulo texto do rótulo
+     * @param campo  componente de entrada associado ao rótulo
+     */
     public static void linha(JPanel form, String rotulo, JComponent campo) {
-        // Obtém a posição da linha que será adicionada.
         int y = proximaLinha(form);
 
-        // Cria o rótulo e associa ele ao campo correspondente.
         JLabel texto = new JLabel(rotulo);
         texto.setForeground(COR_TEXTO_SUAVE);
         texto.setLabelFor(campo);
 
-        // Configura o posicionamento do rótulo na primeira coluna.
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = y;
         c.gridx = 0;
@@ -535,8 +595,6 @@ public final class Componentes {
         c.insets = new Insets(5, 0, 5, 12);
         form.add(texto, c);
 
-        // Configura o campo na segunda coluna.
-        // weightx e fill permitem que ele ocupe o espaço horizontal disponível.
         c.gridx = 1;
         c.weightx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -544,8 +602,13 @@ public final class Componentes {
         form.add(campo, c);
     }
 
-    // Adiciona um botão em uma nova linha do formulário,
-    // ocupando as duas colunas e ficando alinhado à direita.
+    /**
+     * Adiciona um botão em uma nova linha do formulário,
+     * ocupando as duas colunas e alinhado à direita.
+     *
+     * @param form  formulário que receberá o botão
+     * @param botao botão adicionado
+     */
     public static void botaoLinha(JPanel form, JButton botao) {
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = proximaLinha(form);
@@ -556,10 +619,13 @@ public final class Componentes {
         form.add(botao, c);
     }
 
-    /** Empurra os campos para o topo quando o formulário é mais alto que o conteúdo. */
+    /**
+     * Empurra os campos para o topo quando o formulário é mais alto que o conteúdo,
+     * adicionando uma área flexível na última linha.
+     *
+     * @param form formulário a ser finalizado
+     */
     public static void fecharFormulario(JPanel form) {
-        // Cria uma área flexível na última linha do formulário.
-        // Ela absorve o espaço vertical restante e mantém os campos no topo.
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = proximaLinha(form);
         c.gridwidth = 2;
